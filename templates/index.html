@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 E. coli Ciprofloxacin AMR Analyzer & Explainer</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <i class="fa-solid fa-dna logo-icon"></i>
+                <h2>E. coli AMR</h2>
+            </div>
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="tab-overview">
+                    <i class="fa-solid fa-chart-line"></i> Tổng quan mô hình
+                </button>
+                <button class="nav-btn" data-tab="tab-single">
+                    <i class="fa-solid fa-microscope"></i> Phân tích chủng đơn
+                </button>
+                <button class="nav-btn" data-tab="tab-batch">
+                    <i class="fa-solid fa-file-medical"></i> Phân tích hàng loạt
+                </button>
+                <button class="nav-btn" data-tab="tab-history">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử phân tích
+                </button>
+                <button class="nav-btn" data-tab="tab-epidemiology">
+                    <i class="fa-solid fa-chart-pie"></i> Giám sát dịch tễ
+                </button>
+            </nav>
+            <div class="model-status-card">
+                <div class="card-header">
+                    <span class="status-indicator online"></span>
+                    <span>Mô hình đang hoạt động</span>
+                </div>
+                <p id="loaded-model-name">Đang tải...</p>
+                <div class="model-meta">
+                    <span>Threshold: <strong id="model-threshold">-</strong></span>
+                    <span>Features: <strong id="model-features-count">-</strong></span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <h1>Hệ Thống Phân Tích & Giải Thích Kháng Thuốc Ciprofloxacin ở E. coli</h1>
+                <div class="user-profile">
+                    <i class="fa-regular fa-bell icon-btn"></i>
+                    <div class="profile-badge">Nghiên cứu viên vi sinh</div>
+                </div>
+            </header>
+
+            <!-- Tab: OVERVIEW -->
+            <section id="tab-overview" class="tab-pane active">
+                <div class="grid-container">
+                    <!-- Metric Card 1 -->
+                    <div class="metric-card">
+                        <div class="metric-icon val-auc"><i class="fa-solid fa-shield-halved"></i></div>
+                        <div class="metric-info">
+                            <h3>ROC-AUC</h3>
+                            <p class="metric-value">89.90%</p>
+                        </div>
+                    </div>
+                    <!-- Metric Card 2 -->
+                    <div class="metric-card">
+                        <div class="metric-icon val-pr"><i class="fa-solid fa-bullseye"></i></div>
+                        <div class="metric-info">
+                            <h3>PR-AUC (Precision-Recall)</h3>
+                            <p class="metric-value">88.60%</p>
+                        </div>
+                    </div>
+                    <!-- Metric Card 3 -->
+                    <div class="metric-card">
+                        <div class="metric-icon val-acc"><i class="fa-solid fa-check-double"></i></div>
+                        <div class="metric-info">
+                            <h3>Accuracy (Độ chính xác)</h3>
+                            <p class="metric-value">80.00%</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Block -->
+                <div class="dashboard-card main-info-card">
+                    <div class="card-icon"><i class="fa-solid fa-microscope"></i></div>
+                    <div class="card-text">
+                        <h2>Tổng quan về nghiên cứu & Mô hình Stacking Ensemble</h2>
+                        <p>Hệ thống này được xây dựng trên bộ dữ liệu gồm <strong>2,404 mẫu hệ gen vi khuẩn E. coli</strong> với <strong>310 đặc trưng kháng thuốc</strong> (bao gồm 210 đặc trưng nhị phân đại diện cho các gen kháng thuốc/đột biến điểm đích và 100 đặc trưng liên tục đại diện cho mật độ k-mer nền). Mô hình sử dụng phương pháp Ensemble tích hợp (Stacking) giữa <strong>XGBoost, Random Forest và LightGBM</strong> với bộ phân lớp meta Logistic Regression để dự đoán khả năng đề kháng kháng sinh <strong>Ciprofloxacin (nhóm Fluoroquinolone)</strong>.</p>
+                    </div>
+                </div>
+
+                <!-- Interactive Pipeline Flowchart -->
+                <div class="dashboard-card pipeline-flowcard" style="margin-top: 1.5rem;">
+                    <h3><i class="fa-solid fa-route"></i> Sơ đồ luồng Quy trình Xử lý & Phân loại Học máy (ML Pipeline)</h3>
+                    <p class="subtitle">Mô tả cấu trúc xử lý khép kín giúp chống rò rỉ dữ liệu và tối ưu hóa số lượng đặc trưng hệ gen đầu vào.</p>
+                    
+                    <div class="flowchart-container">
+                        <div class="flowchart-step">
+                            <div class="step-num">1</div>
+                            <div class="step-label">Dữ liệu Hệ gen</div>
+                            <div class="step-desc">2,404 mẫu E. coli với 310 đặc trưng (gen & k-mer)</div>
+                        </div>
+                        <i class="fa-solid fa-circle-arrow-right flow-arrow"></i>
+                        
+                        <div class="flowchart-step">
+                            <div class="step-num">2</div>
+                            <div class="step-label">Median Imputer</div>
+                            <div class="step-desc">Điền khuyết giá trị k-mer thiếu bằng trung vị phân bố</div>
+                        </div>
+                        <i class="fa-solid fa-circle-arrow-right flow-arrow"></i>
+
+                        <div class="flowchart-step">
+                            <div class="step-num">3</div>
+                            <div class="step-label">Variance Threshold</div>
+                            <div class="step-desc">Loại bỏ các đặc trưng có độ biến thiên quá thấp (&lt; 0.01)</div>
+                        </div>
+                        <i class="fa-solid fa-circle-arrow-right flow-arrow"></i>
+
+                        <div class="flowchart-step">
+                            <div class="step-num">4</div>
+                            <div class="step-label">RFE Selection</div>
+                            <div class="step-desc">Giảm từ 146 xuống còn 89 gen/k-mer quan trọng nhất</div>
+                        </div>
+                        <i class="fa-solid fa-circle-arrow-right flow-arrow"></i>
+
+                        <div class="flowchart-step">
+                            <div class="step-num">5</div>
+                            <div class="step-label">SMOTE Balancing</div>
+                            <div class="step-desc">Cân bằng lớp thiểu số giúp tăng Recall mô hình lên &gt;80%</div>
+                        </div>
+                        <i class="fa-solid fa-circle-arrow-right flow-arrow"></i>
+
+                        <div class="flowchart-step active-step">
+                            <div class="step-num"><i class="fa-solid fa-check"></i></div>
+                            <div class="step-label">Stacking Ensemble</div>
+                            <div class="step-desc">XGBoost + RF + LGBM tổng hợp bởi Logistic Reg.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2-col">
+                    <div class="dashboard-card">
+                        <h3><i class="fa-solid fa-sliders"></i> Cấu hình tham số tối ưu</h3>
+                        <table class="info-table">
+                            <tr>
+                                <td><strong>Ngưỡng quyết định (Decision Threshold)</strong></td>
+                                <td>0.523 (Trung vị tối ưu từ Nested CV)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mục tiêu tối thiểu (Target Recall)</strong></td>
+                                <td>&ge; 80.00% cho lớp Kháng Ciprofloxacin (Resistant)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Bộ cân bằng dữ liệu</strong></td>
+                                <td>SMOTE (Oversampling tập thiểu số)</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Kỹ thuật giảm chiều đặc trưng</strong></td>
+                                <td>Variance Threshold & RFE (Recursive Feature Elimination)</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3><i class="fa-solid fa-percent"></i> Chỉ số chi tiết trên Tập Kiểm Thử (Test Set)</h3>
+                        <table class="info-table">
+                            <thead>
+                                <tr>
+                                    <th>Lớp phân loại</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1-Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><span class="badge label-susceptible">Susceptible (Nhạy cảm)</span></td>
+                                    <td>84%</td>
+                                    <td>83%</td>
+                                    <td>83%</td>
+                                </tr>
+                                <tr>
+                                    <td><span class="badge label-resistant">Resistant (Kháng thuốc)</span></td>
+                                    <td>75%</td>
+                                    <td>77%</td>
+                                    <td>76%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Model Comparison & ML Reasoning -->
+                <div class="dashboard-card" style="margin-top: 1.5rem;">
+                    <h3><i class="fa-solid fa-code-compare"></i> Đánh giá So sánh & Lập luận Thiết kế Mô hình</h3>
+                    <p class="subtitle">So sánh kết quả kiểm định chéo (Cross-Validation) giữa các tiếp cận để minh chứng hiệu quả của hệ thống Stacking Ensemble.</p>
+                    
+                    <div class="table-responsive" style="margin-bottom: 1.5rem;">
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Phương pháp / Mô hình</th>
+                                    <th>Macro F1-Score</th>
+                                    <th>Recall (Kháng Ciprofloxacin)</th>
+                                    <th>Đặc trưng sử dụng</th>
+                                    <th>Độ phức tạp / Ứng dụng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Mốc ngẫu nhiên (Dummy Classifier)</td>
+                                    <td><span class="text-muted">48.25%</span></td>
+                                    <td><span class="text-muted">39.93%</span></td>
+                                    <td>Không sử dụng</td>
+                                    <td>Đoán ngẫu nhiên (để kiểm chứng khả năng học của hệ thống)</td>
+                                </tr>
+                                <tr>
+                                    <td>Mô hình cơ bản (Simple Decision Tree)</td>
+                                    <td><span style="color: #fbbf24; font-weight: 600;">77.82%</span></td>
+                                    <td><span style="color: #f87171; font-weight: 600;">55.63%</span></td>
+                                    <td>310 đặc trưng gốc</td>
+                                    <td>Cây quyết định đơn lẻ, không xử lý mất cân bằng lớp (bỏ sót nhiều chủng kháng)</td>
+                                </tr>
+                                <tr style="background: rgba(99, 102, 241, 0.1); border-left: 4px solid var(--primary);">
+                                    <td><strong>Stacking Ensemble (Đề xuất)</strong></td>
+                                    <td><span style="color: #34d399; font-weight: 700;">83.56%</span></td>
+                                    <td><span style="color: #34d399; font-weight: 700;">81.89%</span></td>
+                                    <td><strong>89 đặc trưng lọc (RFE)</strong></td>
+                                    <td><strong>Tích hợp XGBoost + RF + LGBM + SMOTE + Meta Learner (Tối ưu nhất)</strong></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background: rgba(255, 255, 255, 0.02); border-radius: 12px; padding: 1.25rem; border: 1px dashed var(--glass-border);">
+                        <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: #a5b4fc;"><i class="fa-solid fa-lightbulb"></i> Tư duy thiết kế hệ thống (ML Reasoning)</h4>
+                        <ul style="padding-left: 1.25rem; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+                            <li><strong>Giải quyết mất cân bằng lớp (SMOTE):</strong> Dữ liệu gốc có tỷ lệ kháng thuốc Ciprofloxacin khá thấp. Việc thêm SMOTE giúp mô hình Stacking tăng mạnh Recall cho lớp Kháng từ <strong style="color: #fbbf24;">55.63%</strong> (Simple DT) lên <strong style="color: #34d399;">81.89%</strong>, hạn chế tối đa việc bỏ sót các chủng vi khuẩn thực sự kháng thuốc.</li>
+                            <li><strong>Giảm thiểu chi phí sinh học (RFE):</strong> Nhờ bộ lọc đặc trưng RFE, mô hình Stacking chỉ cần giải trình tự <strong>89 đặc trưng gen/k-mer quan trọng nhất</strong> (thay vì 310 đặc trưng gốc) mà vẫn giữ vững độ chính xác vượt trội. Điều này giúp tối ưu hóa chi phí giải trình tự gen vi khuẩn trong thực tiễn nghiên cứu.</li>
+                            <li><strong>Độ tin cậy của cấu trúc Stacking:</strong> Sự kết hợp giữa các mô hình mạnh (XGBoost, RF, LGBM) với bộ phân lớp Meta Logistic Regression giúp giảm phương sai, tăng tính ổn định của dự đoán trên dữ liệu hệ gen thực tế ngoài tập huấn luyện.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- AMR Gene Dictionary Card -->
+                <div class="dashboard-card" style="margin-top: 1.5rem;" id="gene-dict-card">
+                    <div class="card-header-actions" style="margin-bottom: 1rem;">
+                        <div>
+                            <h3><i class="fa-solid fa-book-medical"></i> Từ điển Tra cứu Gen Kháng thuốc (AMR Genotype Reference)</h3>
+                            <p class="subtitle" style="margin-bottom: 0;">Tra cứu nhanh cơ chế tác động và kháng thuốc của các gen và đột biến điển hình phát hiện trong hệ gen vi khuẩn.</p>
+                        </div>
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                            <input type="text" id="gene-search-input" placeholder="Tìm kiếm gen (vd: gyrA, bla, tet)...">
+                        </div>
+                    </div>
+                    
+                    <div class="gene-cards-grid" id="gene-cards-container">
+                        <!-- Sẽ render động từ JS -->
+                        <div class="empty-state">
+                            <i class="fa-solid fa-spinner fa-spin empty-icon"></i>
+                            <p>Đang tải từ điển gen từ máy chủ...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: SINGLE DIAGNOSTIC -->
+            <section id="tab-single" class="tab-pane">
+                <div class="grid-2-col">
+                    <!-- Column 1: Inputs -->
+                    <div class="dashboard-card" id="single-input-card">
+                        <h3><i class="fa-solid fa-pen-to-square"></i> Nhập dữ liệu chủng E. coli</h3>
+                        <p class="subtitle">Chọn một mẫu vi khuẩn có sẵn bên dưới hoặc tải lên file dữ liệu đặc trưng.</p>
+                        
+                        <div class="sample-selection-area">
+                            <button class="btn btn-outline" id="load-susceptible-btn">
+                                <i class="fa-solid fa-heart-circle-check"></i> Mẫu Nhạy cảm (Susceptible)
+                            </button>
+                            <button class="btn btn-outline-danger" id="load-resistant-btn">
+                                <i class="fa-solid fa-biohazard"></i> Mẫu Kháng thuốc (Resistant)
+                            </button>
+                        </div>
+
+                        <div class="divider"><span>HOẶC NHẬP DỮ LIỆU JSON</span></div>
+
+                        <div class="input-group-modern" style="margin-bottom: 1.25rem;">
+                            <label for="patient-id-input" style="display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.9rem; color: var(--text-secondary);">
+                                <i class="fa-solid fa-id-card"></i> Mã chủng vi khuẩn / Genome ID (Không bắt buộc):
+                            </label>
+                            <input type="text" id="patient-id-input" placeholder="Ví dụ: EC-202606-101 hoặc 562.100003..." 
+                                   style="width: 100%; padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(15, 23, 42, 0.5); color: var(--text-primary); font-family: inherit; font-size: 0.9rem; outline: none; transition: var(--transition-smooth);"
+                                   onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 10px rgba(99, 102, 241, 0.25)';"
+                                   onblur="this.style.borderColor='var(--glass-border)'; this.style.boxShadow='none';">
+                        </div>
+
+                        <textarea id="json-input" placeholder='{"gene_or_kmer_1": 0.0, "gene_or_kmer_2": 1.0, ...}'></textarea>
+                        
+                        <button class="btn btn-primary btn-full-width" id="btn-predict-single">
+                            <i class="fa-solid fa-play"></i> Tiến hành phân tích & Giải thích SHAP
+                        </button>
+                    </div>
+
+                    <!-- Column 2: Results -->
+                    <div class="dashboard-card" id="single-result-card">
+                        <h3><i class="fa-solid fa-square-poll-vertical"></i> Kết quả phân tích chủng E. coli</h3>
+                        <div class="empty-state" id="single-empty-state">
+                            <i class="fa-solid fa-stethoscope empty-icon"></i>
+                            <p>Nhấn nút Phân tích ở bên trái để xem kết quả chi tiết.</p>
+                        </div>
+                        
+                        <div class="result-details hidden" id="single-result-details">
+                            <div class="diagnostic-outcome">
+                                <span class="outcome-title">KẾT LUẬN PHÂN TÍCH:</span>
+                                <h2 id="prediction-tag" class="badge-outcome">Đang phân tích...</h2>
+                            </div>
+                            
+                            <!-- Gauge probability chart area -->
+                            <div class="gauge-container">
+                                <canvas id="gaugeChart"></canvas>
+                                <div class="gauge-label">
+                                    <span id="prob-percentage">0%</span>
+                                    <small>Xác suất kháng Ciprofloxacin</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SHAP Feature Importance Section -->
+                <div class="dashboard-card hidden" id="shap-card">
+                    <div class="card-header-actions" style="margin-bottom: 1rem;">
+                        <div>
+                            <h3><i class="fa-solid fa-magnifying-glass-chart"></i> Giải thích cơ chế kháng Ciprofloxacin bằng SHAP (Nghiên cứu viên)</h3>
+                            <p class="subtitle" style="margin-bottom: 0;">Đồ thị cột hiển thị 10 đặc trưng (gen kháng hoặc chỉ số k-mer) tác động mạnh nhất đẩy mô hình phân loại mẫu này là Kháng (Resistant - SHAP dương) hay Nhạy (Susceptible - SHAP âm) đối với Ciprofloxacin.</p>
+                        </div>
+                        <button class="btn btn-success" id="btn-download-shap">
+                            <i class="fa-solid fa-download"></i> Tải ảnh SHAP (PNG)
+                        </button>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="shapChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- AI Assistant Section -->
+                <div class="dashboard-card hidden" id="ai-card" style="margin-top: 1.5rem;">
+                    <div class="ai-card-header">
+                        <h3><i class="fa-solid fa-robot"></i> Trợ lý Nghiên cứu AMR (AI Ciprofloxacin Advisor)</h3>
+                        <button class="btn btn-outline" id="btn-print-report">
+                            <i class="fa-solid fa-print"></i> In báo cáo / Lưu PDF
+                        </button>
+                    </div>
+                    <p class="subtitle" style="margin-top: 0.5rem;">Báo cáo phân tích sinh tin học tự động từ trí tuệ nhân tạo kết hợp dữ liệu SHAP hệ gen.</p>
+                    <div class="ai-report-box" id="ai-report-box">
+                        <p class="text-muted">Đang phân tích dữ liệu hệ gen E. coli...</p>
+                    </div>
+                    
+                    <div class="ai-chat-divider"><span>HỎI ĐÁP VỀ CƠ CHẾ ĐỀ KHÁNG VỚI AI</span></div>
+                    
+                    <div class="ai-chat-history" id="ai-chat-history">
+                        <!-- Tin nhắn trò chuyện sẽ hiển thị ở đây -->
+                    </div>
+                    
+                    <div class="ai-chat-input-area">
+                        <input type="text" id="ai-chat-input" placeholder="Hỏi AI về cơ chế kháng thuốc hoặc đề xuất kháng sinh thay thế cho chủng vi khuẩn này..." disabled>
+                        <button class="btn btn-primary" id="btn-send-chat" disabled>
+                            <i class="fa-solid fa-paper-plane"></i> Gửi
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: BATCH DIAGNOSTIC -->
+            <section id="tab-batch" class="tab-pane">
+                <div class="dashboard-card">
+                    <h3><i class="fa-solid fa-file-arrow-up"></i> Phân tích hàng loạt (Batch Inference)</h3>
+                    <p class="subtitle">Tải lên file CSV chứa danh sách đặc trưng của nhiều mẫu vi khuẩn E. coli (Mẫu dòng đầu tiên là tên các đặc trưng, index là mã mẫu/Genome ID).</p>
+                    
+                    <div class="upload-dropzone" id="dropzone">
+                        <i class="fa-solid fa-file-csv upload-icon"></i>
+                        <p>Kéo và thả file CSV ở đây hoặc <strong>nhấp để chọn file</strong> từ máy tính</p>
+                        <input type="file" id="batch-file-input" accept=".csv" class="hidden">
+                    </div>
+                    
+                    <div class="upload-actions hidden" id="upload-actions-panel">
+                        <span class="file-name-display" id="selected-file-name">filename.csv</span>
+                        <button class="btn btn-primary" id="btn-predict-batch">
+                            <i class="fa-solid fa-gears"></i> Bắt đầu phân tích hàng loạt
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Batch prediction results preview -->
+                <div class="dashboard-card hidden" id="batch-results-card">
+                    <div class="card-header-actions">
+                        <h3><i class="fa-solid fa-table-list"></i> Xem trước kết quả phân tích</h3>
+                        <a href="#" class="btn btn-success" id="btn-download-results" download>
+                            <i class="fa-solid fa-file-arrow-down"></i> Tải file kết quả CSV đầy đủ
+                        </a>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="results-table" id="batch-preview-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã Mẫu (Sample ID / Genome ID)</th>
+                                    <th>Kết Luận Đề Kháng</th>
+                                    <th>Xác Suất Kháng Ciprofloxacin (Resistant Prob)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dữ liệu preview sẽ được insert bằng JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: HISTORY -->
+            <section id="tab-history" class="tab-pane">
+                <div class="dashboard-card">
+                    <div class="card-header-actions">
+                        <div>
+                            <h3><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử phân tích chủng vi khuẩn</h3>
+                            <p class="subtitle" style="margin-bottom: 0;">Danh sách toàn bộ các chủng E. coli đã thực hiện phân tích và được lưu trữ trên cơ sở dữ liệu SQLite.</p>
+                        </div>
+                        <button class="btn btn-outline-danger" id="btn-clear-history">
+                            <i class="fa-solid fa-trash-can"></i> Xóa toàn bộ lịch sử phân tích
+                        </button>
+                    </div>
+
+                    <div class="table-responsive" style="margin-top: 1rem;">
+                        <table class="results-table" id="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Thời Gian</th>
+                                    <th>Mã Chủng / Genome ID</th>
+                                    <th>Kết Luận Đề Kháng</th>
+                                    <th>Xác Suất Kháng Ciprofloxacin</th>
+                                    <th>Gen Phát Hiện</th>
+                                    <th>Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body">
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                        <i class="fa-solid fa-spinner fa-spin" style="margin-bottom: 0.5rem; font-size: 1.5rem; display: block;"></i>
+                                        Đang tải dữ liệu lịch sử...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: EPIDEMIOLOGY -->
+            <section id="tab-epidemiology" class="tab-pane">
+                <div class="dashboard-card">
+                    <h3><i class="fa-solid fa-chart-pie"></i> Giám sát Dịch tễ học đề kháng E. coli (AMR Surveillance)</h3>
+                    <p class="subtitle">Báo cáo tổng hợp tình hình đề kháng Ciprofloxacin và phân bố gen kháng tại cơ sở nghiên cứu dựa trên dữ liệu tích lũy.</p>
+                    
+                    <div class="grid-2-col" style="margin-top: 1.5rem;">
+                        <!-- Chart 1: Trend over time -->
+                        <div class="dashboard-card" style="background: rgba(15, 23, 42, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); padding: 1.5rem;">
+                            <h4 style="margin-bottom: 1rem; color: #cbd5e1; font-weight: 600;"><i class="fa-solid fa-chart-line" style="color: #6366f1; margin-right: 0.5rem;"></i> Xu hướng tỷ lệ kháng Ciprofloxacin (%)</h4>
+                            <div style="height: 300px; position: relative;">
+                                <canvas id="epiTrendChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <!-- Chart 2: Gene distribution -->
+                        <div class="dashboard-card" style="background: rgba(15, 23, 42, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); padding: 1.5rem;">
+                            <h4 style="margin-bottom: 1rem; color: #cbd5e1; font-weight: 600;"><i class="fa-solid fa-chart-bar" style="color: #10b981; margin-right: 0.5rem;"></i> Tần suất các gen kháng thuốc phát hiện</h4>
+                            <div style="height: 300px; position: relative;">
+                                <canvas id="epiGeneChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Custom App Javascript -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

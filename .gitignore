@@ -1,0 +1,26 @@
+# Environments
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Databases
+amr_history.db
+
+# User uploads & temporary files
+uploads/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Virtual environments (if any)
+venv/
+.venv/
+env/
+
+# Old model checkpoints (keep only the latest one)
+amr_classifier_20260613_092956.joblib
+amr_classifier_20260613_150934.joblib
+amr_classifier_20260614_000549.joblib
