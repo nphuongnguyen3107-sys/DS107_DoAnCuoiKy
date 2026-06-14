@@ -31,14 +31,14 @@ def main():
     print("\n2. Bắt đầu huấn luyện và tối ưu hóa các mô hình (XGBoost, RF, LightGBM, Stacking)...")
     results = ml_pipeline.train_all_models(X_train, y_train, n_trials=50)
 
-    # 3. Lấy mô hình Stacking Ensemble và threshold tối ưu của nó
-    stacking_pipeline, _, threshold = results["stacking"]
+    # 3. Lấy mô hình XGBoost Pipeline và threshold tối ưu của nó
+    xgb_pipeline, _, threshold = results["xgb"]
     features = X_train.columns.tolist()
 
     # 4. Lưu mô hình xuống file .joblib
     print("\n3. Đang lưu mô hình tối ưu...")
     model_path = ml_pipeline.save_model(
-        model=stacking_pipeline,
+        model=xgb_pipeline,
         threshold=threshold,
         features=features,
         model_name="amr_classifier"
@@ -53,7 +53,7 @@ def main():
     print("=======================================================")
     from sklearn.metrics import classification_report, roc_auc_score, average_precision_score
 
-    y_proba_test = stacking_pipeline.predict_proba(X_test)[:, 1]
+    y_proba_test = xgb_pipeline.predict_proba(X_test)[:, 1]
     y_pred_test = (y_proba_test >= threshold).astype(int)
 
     print(f"Test set size: {len(X_test)}")

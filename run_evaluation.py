@@ -69,7 +69,7 @@ def sep(title: str):
 # PHÂN TÍCH 1: DummyClassifier Baseline
 # ─────────────────────────────────────────────────────────────────────────────
 
-def run_dummy_baseline(X_train, y_train, stacking_model):
+def run_dummy_baseline(X_train, y_train, xgb_model):
     sep("1. DUMMY CLASSIFIER BASELINE & SIMPLE MODEL — Chứng minh model thực sự học")
 
     # 1. Dummy Classifier (đoán mò)
@@ -87,44 +87,41 @@ def run_dummy_baseline(X_train, y_train, stacking_model):
     simple_scores = cross_validate(simple_tree, X_train, y_train,
                                    cv=cv_strategy, scoring=SCORING, n_jobs=-1)
 
-    # 3. Proposed Stacking Ensemble
-    stacking_scores = cross_validate(stacking_model, X_train, y_train,
+    # 3. Proposed XGBoost Pipeline
+    xgb_scores = cross_validate(xgb_model, X_train, y_train,
                                      cv=cv_strategy, scoring=SCORING, n_jobs=-1)
 
     dummy_f1   = dummy_scores["test_macro_f1"].mean()
     dummy_rec  = dummy_scores["test_recall_R"].mean()
     simple_f1  = simple_scores["test_macro_f1"].mean()
     simple_rec = simple_scores["test_recall_R"].mean()
-    model_f1   = stacking_scores["test_macro_f1"].mean()
-    model_rec  = stacking_scores["test_recall_R"].mean()
+    model_f1   = xgb_scores["test_macro_f1"].mean()
+    model_rec  = xgb_scores["test_recall_R"].mean()
 
-    print(f"\n{'Metric':<25} {'Dummy (Random)':<18} {'Simple DT (Base)':<20} {'Stacking Ensemble'}")
+    print(f"\n{'Metric':<25} {'Dummy (Random)':<18} {'Simple DT (Base)':<20} {'XGBoost Pipeline'}")
     print("-" * 80)
     print(f"{'Macro F1':<25} {dummy_f1*100:.2f}%{'':<12} {simple_f1*100:.2f}%{'':<14} {model_f1*100:.2f}%")
     print(f"{'Recall (Resistant)':<25} {dummy_rec*100:.2f}%{'':<12} {simple_rec*100:.2f}%{'':<14} {model_rec*100:.2f}%")
-    print(f"\n✅ Kết luận: Mô hình Stacking cải thiện Macro F1 thêm "
+    print(f"\n✅ Kết luận: Mô hình XGBoost cải thiện Macro F1 thêm "
           f"{(model_f1 - simple_f1)*100:.2f} điểm phần trăm so với mô hình Decision Tree cơ bản,")
     print(f"   và thêm {(model_f1 - dummy_f1)*100:.2f} điểm phần trăm so với đoán ngẫu nhiên.")
-    print("   → Mô hình Stacking Ensemble thực sự học được pattern kháng thuốc tối ưu từ dữ liệu genomics.")
+    print("   → Mô hình XGBoost Pipeline thực sự học được pattern kháng thuốc tối ưu từ dữ liệu genomics.")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PHÂN TÍCH 2: Top-20 Feature Importance (từ Random Forest base trong stacking)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def run_feature_importance(X_train, y_train, stacking_model, all_feature_names):
+def run_feature_importance(X_train, y_train, xgb_model, all_feature_names):
     sep("2. TOP-20 FEATURE IMPORTANCE — Đặc trưng nào quan trọng nhất")
 
     try:
-        # ── Lấy RF pipeline từ stacking dùng named_estimators_ ──────────────
-        rf_pipe = stacking_model.named_estimators_['rf']
-
-        # Lấy feature importances từ bước 'clf' (RandomForestClassifier)
-        importances = rf_pipe.named_steps['clf'].feature_importances_
+        # Lấy feature importances từ bước 'clf' (XGBClassifier)
+        importances = xgb_model.named_steps['clf'].feature_importances_
 
         # ── Tái tạo tên đặc trưng sau var_thresh + rfe ────────────────────
-        var_step = rf_pipe.named_steps['var_thresh']
-        rfe_step = rf_pipe.named_steps['rfe']
+        var_step = xgb_model.named_steps['var_thresh']
+        rfe_step = xgb_model.named_steps['rfe']
 
         # Bước 1: index các cột vượt qua VarianceThreshold
         var_support = var_step.get_support()          # bool array, len = n_all_features
@@ -139,7 +136,7 @@ def run_feature_importance(X_train, y_train, stacking_model, all_feature_names):
 
         print(f"\n  Tổng số đặc trưng gốc   : {len(all_feature_names)}")
         print(f"  Sau VarianceThreshold    : {var_support.sum()}")
-        print(f"  Sau RFE                  : {rfe_support.sum()} (dùng để train RF trong stacking)")
+        print(f"  Sau RFE                  : {rfe_support.sum()} (dùng để train XGBoost)")
         print(f"\n{'Rank':<6} {'Feature Name':<35} {'Importance':>10}  {'Bar'}")
         print("-" * 65)
         for rank, (feat, imp) in enumerate(feat_imp[:20], 1):
@@ -148,28 +145,12 @@ def run_feature_importance(X_train, y_train, stacking_model, all_feature_names):
 
         top5 = [f for f, _ in feat_imp[:5]]
         print(f"\n✅ Kết luận: Top 5 đặc trưng quan trọng nhất: {', '.join(top5)}")
-        print("   → Đây là các gen/k-mer mà RF trong Stacking dựa vào chủ yếu để phân loại kháng thuốc.")
+        print("   → Đây là các gen/k-mer mà XGBoost Pipeline dựa vào chủ yếu để phân loại kháng thuốc.")
         return feat_imp
 
     except Exception as e:
-        print(f"⚠️ Không thể trích xuất feature importance từ RF: {e}")
-        print("   → Thử fallback: lấy trọng số từ final_estimator (Logistic Regression coef)...")
-        try:
-            meta = stacking_model.final_estimator_
-            coefs = np.abs(meta.coef_[0])
-            meta_feat_names = ["XGBoost", "RandomForest", "LightGBM"]
-            feat_imp_meta = sorted(zip(meta_feat_names, coefs), key=lambda x: -x[1])
-            print(f"\n  Trọng số meta-learner (Logistic Regression) — mức đóng góp của mỗi base model:")
-            print(f"{'Base Model':<20} {'|coef| (trọng số)':>20}  {'Bar'}")
-            print("-" * 50)
-            for name, coef in feat_imp_meta:
-                bar = "█" * max(1, int(coef * 30))
-                print(f"  {name:<18} {coef:>12.4f}   {bar}")
-            print("  → Base model có |coef| cao đóng góp nhiều nhất vào quyết định cuối của Stacking.")
-            return []
-        except Exception as e2:
-            print(f"  Fallback cũng thất bại: {e2}")
-            return []
+        print(f"⚠️ Không thể trích xuất feature importance từ XGBoost: {e}")
+        return []
 
 
 
@@ -227,10 +208,10 @@ def run_ablation_study(X_train, y_train):
 # PHÂN TÍCH 4: FN/FP Error Analysis — Mô hình sai ở đâu
 # ─────────────────────────────────────────────────────────────────────────────
 
-def run_error_analysis(X_test, y_test, stacking_model, threshold):
+def run_error_analysis(X_test, y_test, xgb_model, threshold):
     sep("4. FN / FP ERROR ANALYSIS — Mô hình sai ở đâu (quan trọng cho y tế)")
 
-    y_proba = stacking_model.predict_proba(X_test)[:, 1]
+    y_proba = xgb_model.predict_proba(X_test)[:, 1]
     y_pred  = (y_proba >= threshold).astype(int)
 
     # Ma trận nhầm lẫn
@@ -308,29 +289,29 @@ def main():
     )
 
     # Load model đã train
-    stacking_model, threshold, features = load_latest_model()
+    xgb_model, threshold, features = load_latest_model()
     all_feature_names = X_train.columns.tolist()
 
     # ── Chạy 4 phân tích ──────────────────────────────────────────────────
 
     # 1. Dummy baseline
-    run_dummy_baseline(X_train, y_train, stacking_model)
+    run_dummy_baseline(X_train, y_train, xgb_model)
 
     # 2. Feature importance
-    run_feature_importance(X_train, y_train, stacking_model, all_feature_names)
+    run_feature_importance(X_train, y_train, xgb_model, all_feature_names)
 
     # 3. Ablation study (chỉ dùng RF đơn để nhanh; stacking mất ~30 phút/run)
     print("\n⏳ Ablation Study dùng Random Forest đơn (để tiết kiệm thời gian)...")
     run_ablation_study(X_train, y_train)
 
     # 4. FN/FP error analysis trên test set
-    run_error_analysis(X_test, y_test, stacking_model, threshold)
+    run_error_analysis(X_test, y_test, xgb_model, threshold)
 
     print("\n" + "="*60)
     print("  ✅ HOÀN THÀNH TẤT CẢ 4 PHÂN TÍCH")
     print("="*60)
     print("  Kết quả này sử dụng trực tiếp vào báo cáo đồ án:")
-    print("  • Bảng 1: Baseline vs Simple Model vs Stacking Ensemble (Phân tích 1)")
+    print("  • Bảng 1: Baseline vs Simple Model vs XGBoost Pipeline (Phân tích 1)")
     print("  • Hình 2: Top-20 Feature Importance (Phân tích 2)")
     print("  • Bảng 3: Ablation Study — đóng góp từng thành phần (Phân tích 3)")
     print("  • Bảng 4: Ma trận nhầm lẫn + Phân tích FN/FP (Phân tích 4)")

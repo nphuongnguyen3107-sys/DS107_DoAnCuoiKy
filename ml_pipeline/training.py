@@ -203,9 +203,10 @@ def train_all_models(X_train, y_train, n_trials: int = N_TRIALS):
             direction="maximize",
             sampler=optuna.samplers.TPESampler(seed=RANDOM_STATE),
         )
+        actual_trials = n_trials if name == "XGBoost" else 5
         study.optimize(
             lambda t: objective(t, X_train, y_train),  # FIX LỖI 3: truyền data vào
-            n_trials=n_trials,
+            n_trials=actual_trials,
             show_progress_bar=True,
         )
         best_params = {
