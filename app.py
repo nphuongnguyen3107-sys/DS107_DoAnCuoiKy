@@ -542,9 +542,9 @@ def init_model():
         print("Success: Model loaded successfully!")
         
         # Tải dữ liệu nền (background) để khởi tạo SHAP Explainer
-        # Nếu có file CSV dữ liệu, dùng 100 mẫu đầu tiên làm background
+        # Nếu có file CSV dữ liệu, dùng 15 mẫu đầu tiên làm background (giảm từ 100 để tăng tốc độ trên Render)
         if os.path.exists("X.csv"):
-            X_background = pd.read_csv("X.csv", index_col=0).head(100)
+            X_background = pd.read_csv("X.csv", index_col=0).head(15)
             print("Initializing SHAP Explainer...")
             SHAP_EXPLAINER = ml_pipeline.build_shap_explainer(MODEL, X_background)
             print("Success: SHAP Explainer initialized successfully!")
