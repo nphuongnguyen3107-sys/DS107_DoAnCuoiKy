@@ -71,7 +71,7 @@ def get_gemini_api_keys():
     return keys
 
 # --- CẤU HÌNH CƠ SỞ DỮ LIỆU SQLITE (LƯU LỊCH SỬ BỆNH NHÂN) ---
-DATABASE_PATH = 'amr_history.db'
+DATABASE_PATH = 'models/amr_history.db'
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE_PATH)
@@ -322,16 +322,13 @@ def generate_local_chat_reply(message, outcome, probability, top_features):
         return "### ⚠️ Hướng dẫn Chống chỉ định Lâm sàng theo đối tượng (Offline Mode)\n\n" \
                "- 👶 **Trẻ em:**\n" \
                "  * **Dưới 18 tuổi:** Tránh dùng nhóm **Fluoroquinolones** (như Ciprofloxacin, Levofloxacin) do nguy cơ gây tổn thương sụn khớp ở các khớp chịu lực.\n" \
-               "  * **Dưới 8 tuổi:** Tránh dùng nhóm **Tetracyclines** (Tetracycline, Doxycycline) do nguy cơ gắn calci làm răng nhiễm màu vĩnh viễn (răng xỉn vàng/nâu) và làm chậm sự phát triển xương dài.\n" \
-               "- 🤰 **Phụ nữ mang thai & cho con bú:**\n" \
-               "  * Chống chỉ định dùng nhóm **Fluoroquinolones** và **Tetracyclines** (đặc biệt trong nửa sau thai kỳ).\n" \
-               "  * Hạn chế dùng **Aminoglycosides** (độc tính trên tai có thể gây điếc bẩm sinh cho thai nhi).\n" \
-               "  * Các nhóm **Cephalosporins** và **Penicillins** được coi là tương đối an toàn.\n" \
+               "  * **Dưới 8 tuổi:** Tránh dùng nhóm **Tetracyclines** (như Tetracycline, Doxycycline) do nguy cơ gây biến màu răng vĩnh viễn và chậm phát triển xương.\n" \
+               "- 🤰 **Phụ nữ mang thai / cho con bú:**\n" \
+               "  * Tránh dùng **Fluoroquinolones** và **Tetracyclines** để đảm bảo an toàn cho sự phát triển của thai nhi.\n" \
                "- 🧓 **Người cao tuổi (> 65 tuổi):**\n" \
-               "  * Thận trọng lớn khi dùng **Aminoglycosides** (như Streptomycin, Gentamicin). Cần giảm liều và theo dõi sát sao chức năng thận (Creatinine huyết thanh) vì người cao tuổi có nguy cơ độc tính trên thận và tai (gây điếc) rất cao.\n" \
-               "- 🔬 **Lưu ý chung:** Luôn đối chiếu với hướng dẫn điều trị quốc gia và kết quả kháng sinh đồ thực tế tại viện."
+               "  * Thận trọng đặc biệt và cần chỉnh liều khi dùng **Aminoglycosides** (Streptomycin, Gentamicin) do nguy cơ tích lũy độc tính gây suy thận và điếc không hồi phục.\n" \
+               "- 💡 **Nguyên tắc chung:** Luôn kết hợp hướng dẫn điều trị quốc gia và kết quả kháng sinh đồ thực tế tại viện."
 
-    # 3c. Câu hỏi về dị ứng thuốc (Penicillin allergy...)
     if any(k in msg_lower for k in ["dị ứng", "di ung", "penicillin"]):
         return "### ⚠️ Hướng dẫn Lâm sàng cho Bệnh nhân Dị ứng Kháng sinh (Offline Mode)\n\n" \
                "- 💊 **Dị ứng Penicillin:**\n" \
@@ -345,15 +342,15 @@ def generate_local_chat_reply(message, outcome, probability, top_features):
                "- 📂 **Thông tin tập dữ liệu (Dataset):**\n" \
                "  * **Số lượng:** **2,404 mẫu** hệ gen vi khuẩn E. coli.\n" \
                "  * **Đặc trưng ban đầu:** 310 đặc trưng (210 đặc trưng gen kháng thuốc AMR và 100 đặc trưng liên tục đại diện cho mật độ k-mer nền).\n" \
-               "  * **Đặc trưng rút gọn (sau RFE):** Rút gọn xuống **89 đặc trưng gen/k-mer quan trọng nhất** giúp tối ưu hóa chi phí giải trình tự gen.\n" \
+               "  * **Đặc trưng rút gọn (sau RFE):** Rút gọn xuống **93 đặc trưng gen/k-mer quan trọng nhất** giúp tối ưu hóa chi phí giải trình tự gen.\n" \
                "- 🤖 **Thuật toán học máy đề xuất:**\n" \
-               "  * **Stacking Ensemble (Xếp chồng):** Tích hợp quyết định từ 3 mô hình nền tảng gồm **XGBoost, Random Forest, và LightGBM**, tổng hợp bởi mô hình Meta **Logistic Regression** để tối ưu hóa độ ổn định dự đoán.\n" \
+               "  * **XGBoost Pipeline (Đề xuất):** Mô hình phân loại XGBoost được tối ưu hóa siêu tham số bằng Optuna kết hợp với bộ lọc giảm chiều đặc trưng RFE và kỹ thuật cân bằng dữ liệu SMOTE để tối ưu hóa hiệu năng chẩn đoán.\n" \
                "- 📈 **Chỉ số đánh giá mô hình (Performance Metrics):**\n" \
-               "  * **Độ chính xác (Accuracy):** **80.00%** trên tập test.\n" \
-               "  * **ROC-AUC:** **89.90%** và **PR-AUC:** **88.60%**.\n" \
-               "  * **Recall lớp Kháng Ciprofloxacin (Resistant):** Đạt **81.89%** nhờ kỹ thuật cân bằng dữ liệu **SMOTE** (tránh bỏ sót chủng vi khuẩn kháng thuốc trong chẩn đoán vi sinh).\n" \
+               "  * **Độ chính xác (Accuracy):** **83.00%** trên tập test.\n" \
+               "  * **ROC-AUC:** **90.29%** và **PR-AUC:** **89.05%**.\n" \
+               "  * **Recall lớp Kháng Ciprofloxacin (Resistant):** Đạt **80.82%** (CV) và **78.00%** (test set) nhờ kỹ thuật cân bằng dữ liệu **SMOTE** (tránh bỏ sót chủng vi khuẩn kháng thuốc trong chẩn đoán vi sinh).\n" \
                "- ⚙️ **Ngưỡng quyết định (Decision Threshold):**\n" \
-               "  * Được tối ưu ở mức **0.523** (lấy từ Nested Cross-Validation) giúp cân bằng hoàn hảo giữa độ chính xác và độ nhạy lâm sàng."
+               "  * Được tối ưu ở mức **0.521** giúp cân bằng hoàn hảo giữa độ chính xác và độ nhạy lâm sàng."
 
     # 3e. Câu hỏi tình huống lâm sàng chuyên sâu (MDR, MIC, Mang thai + Dị ứng + Kháng parC, Thăt bại Carbapenem)
     if any(k in msg_lower for k in ["đồng thời", "cả hai", "phối hợp gen", "đa kháng", "mdr", "bơm đẩy đi kèm", "bơm đẩy kết hợp", "ước lượng mic", "dải mic", "xét nghiệm bổ sung", "kiểm chứng", "cấy máu", "mang thai bị dị ứng", "thất bại carbapenem", "không giảm sốt", "72h"]):
@@ -362,7 +359,7 @@ def generate_local_chat_reply(message, outcome, probability, top_features):
                "  * Sự kết hợp đồng thời của gen sinh ESBL (`blaCTX-M-15`) và đột biến đích Fluoroquinolone (`gyrA_S83L`) tạo ra chủng vi khuẩn đa kháng cực kỳ nguy hiểm. Mức độ nguy hại lâm sàng tăng vọt do hầu như tất cả các kháng sinh Cephalosporin thế hệ 3/4 và Quinolone (Ciprofloxacin) thông thường đều mất tác dụng.\n" \
                "  * Nếu xuất hiện thêm cơ chế bơm đẩy chủ động (efflux pump như `floR`, `tet`), vi khuẩn có thể tự động đẩy bớt kháng sinh ra ngoài, làm giảm nồng độ thuốc nội bào và thúc đẩy tính kháng thuốc chéo.\n" \
                "- 🔬 **Nồng độ MIC & Kiểm chứng vi sinh:**\n" \
-               "  * Mô hình Stacking hiện tại chỉ phân loại nhị phân Kháng/Nhạy đối với Ciprofloxacin dựa trên kiểu gen. Hệ thống **không** dự đoán trực tiếp giá trị MIC (Nồng độ ức chế tối thiểu) bằng số.\n" \
+               "  * Mô hình XGBoost Pipeline hiện tại chỉ phân loại nhị phân Kháng/Nhạy đối với Ciprofloxacin dựa trên kiểu gen. Hệ thống **không** dự đoán trực tiếp giá trị MIC (Nồng độ ức chế tối thiểu) bằng số.\n" \
                "  * Nghiên cứu viên nên chỉ định thêm **Kháng sinh đồ đĩa giấy khuếch tán (Kirby-Bauer)** hoặc máy tự động (như Vitek 2) để xác định chính xác MIC thực tế của chủng vi khuẩn.\n" \
                "- 🤰 **Ca nhiễm E. coli phức tạp (Mang thai + Dị ứng Penicillin + Kháng parC):**\n" \
                "  * Do mẫu kháng Fluoroquinolone (parC đột biến) => Không dùng Ciprofloxacin.\n" \
@@ -383,7 +380,7 @@ def generate_local_chat_reply(message, outcome, probability, top_features):
                "- 📁 **Đối tượng huấn luyện & Giới hạn dữ liệu:**\n" \
                "  * Mô hình được huấn luyện tối ưu nhất trên loài *Escherichia coli* và họ *Enterobacteriaceae*.\n" \
                "  * **Cảnh báo:** Độ tin cậy của mô hình sẽ **giảm mạnh** nếu đưa vào mẫu vi khuẩn Gram dương do sự khác biệt hoàn toàn về cấu trúc vách tế bào và cơ chế kháng thuốc.\n" \
-               "  * **anomaly detection (Cảnh báo ngoại lai):** Hiện tại mô hình Stacking không có bộ lọc phát hiện dị thường. Nếu đưa vào một gen hoàn toàn mới hoặc loài vi khuẩn không phù hợp, mô hình vẫn ép đưa ra dự đoán nhị phân đối với Ciprofloxacin.\n" \
+               "  * **anomaly detection (Cảnh báo ngoại lai):** Hiện tại mô hình XGBoost Pipeline không có bộ lọc phát hiện dị thường. Nếu đưa vào một gen hoàn toàn mới hoặc loài vi khuẩn không phù hợp, mô hình vẫn ép đưa ra dự đoán nhị phân đối với Ciprofloxacin.\n" \
                "- 🧬 **Tại sao gen tet(A) có SHAP âm ở một số mẫu cụ thể (ví dụ mẫu ID 1042)?**\n" \
                "  * SHAP đo lường đóng góp tương tác giữa các đặc trưng. Mặc dù `tet(A)` là gen kháng Tetracycline, nhưng nếu trong mẫu đó thiếu các gen đồng tác nhân hoặc mật độ k-mer nền thể hiện kiểu gen của một chủng nhạy cảm yếu, sự đóng góp cục bộ của đặc trưng này có thể bị bù trừ bởi các yếu tố khác, tạo ra giá trị SHAP âm."
 
@@ -401,7 +398,7 @@ def generate_local_chat_reply(message, outcome, probability, top_features):
     # 4. Câu hỏi về SHAP/giải thích mô hình
     if any(k in msg_lower for k in ["shap", "biểu đồ", "đồ thị", "giải thích"]):
         return "### 📊 Giải thích về SHAP (Shapley Additive exPlanations)\n\n" \
-               "- **SHAP** đo lường mức độ đóng góp của từng gen / k-mer vào quyết định của mô hình Stacking Ensemble.\n" \
+               "- **SHAP** đo lường mức độ đóng góp của từng gen / k-mer vào quyết định của mô hình XGBoost Pipeline.\n" \
                "- **Cột màu Đỏ (SHAP > 0):** Đại diện cho các yếu tố thúc đẩy chủng vi khuẩn trở nên **Kháng Ciprofloxacin**.\n" \
                "- **Cột màu Xanh (SHAP < 0):** Đại diện cho các yếu tố giữ chủng vi khuẩn ở trạng thái **Nhạy cảm Ciprofloxacin**.\n" \
                "- Độ dài của cột tỉ lệ thuận với độ mạnh của tác động."
@@ -422,7 +419,7 @@ def generate_ai_report(outcome, probability, top_features, threshold):
     Bạn là một Cố vấn Sinh tin học và Vi sinh lâm sàng chuyên ngành vi khuẩn E. coli và đề kháng kháng sinh.
     Hãy viết một báo cáo phân tích mức độ đề kháng/nhạy cảm kháng sinh Ciprofloxacin ngắn gọn, chuyên nghiệp bằng tiếng Việt cho chủng E. coli này dựa trên kết quả dự đoán kiểu hình sau:
     
-    - Dự báo của mô hình Stacking: {outcome_vietnamese} (Xác suất đề kháng Ciprofloxacin: {probability * 100:.2f}%, Ngưỡng quyết định: {threshold:.3f})
+    - Dự báo của mô hình XGBoost Pipeline: {outcome_vietnamese} (Xác suất đề kháng Ciprofloxacin: {probability * 100:.2f}%, Ngưỡng quyết định: {threshold:.3f})
     - Top các đặc trưng gen/k-mer ảnh hưởng lớn nhất lấy từ giải thích SHAP:
     {json.dumps(top_features, indent=2)}
     
@@ -529,7 +526,7 @@ def init_model():
     # Khởi tạo DB SQLite trước khi nạp mô hình
     init_db()
     
-    model_files = glob.glob("amr_classifier_*.joblib")
+    model_files = glob.glob("models/amr_classifier_*.joblib")
     if not model_files:
         print("Warning: No .joblib model files found. Please run run_training.py first.")
         return False
@@ -543,8 +540,8 @@ def init_model():
         
         # Tải dữ liệu nền (background) để khởi tạo SHAP Explainer
         # Nếu có file CSV dữ liệu, dùng 15 mẫu đầu tiên làm background (giảm từ 100 để tăng tốc độ trên Render)
-        if os.path.exists("X.csv"):
-            X_background = pd.read_csv("X.csv", index_col=0).head(15)
+        if os.path.exists("data/X.csv"):
+            X_background = pd.read_csv("data/X.csv", index_col=0).head(15)
             print("Initializing SHAP Explainer...")
             SHAP_EXPLAINER = ml_pipeline.build_shap_explainer(MODEL, X_background)
             print("Success: SHAP Explainer initialized successfully!")
@@ -589,15 +586,15 @@ def get_gene_db():
 @app.route('/api/get_samples', methods=['GET'])
 def get_samples():
     """Trả về danh sách các mẫu chủng vi khuẩn đại diện nhạy cảm và kháng thuốc được phân loại chính xác."""
-    if not os.path.exists("X.csv") or not os.path.exists("y.csv"):
+    if not os.path.exists("data/X.csv") or not os.path.exists("data/y.csv"):
         return jsonify({"status": "error", "message": "Data files not found."}), 404
     
     if MODEL is None:
         return jsonify({"status": "error", "message": "Model not loaded yet."}), 500
         
     try:
-        X = pd.read_csv("X.csv", index_col=0)
-        y = pd.read_csv("y.csv", index_col=0).iloc[:, 0]
+        X = pd.read_csv("data/X.csv", index_col=0)
+        y = pd.read_csv("data/y.csv", index_col=0).iloc[:, 0]
         
         # Dự đoán xác suất cho toàn bộ dữ liệu để lọc mẫu chính xác
         df_aligned = X.reindex(columns=FEATURES, fill_value=0)
@@ -832,7 +829,7 @@ def chat():
     system_instruction = f"""
     Bạn là một Cố vấn Sinh tin học và Vi sinh lâm sàng chuyên ngành vi khuẩn E. coli và đề kháng kháng sinh.
     Bạn đang trao đổi với kỹ thuật viên vi sinh hoặc bác sĩ điều trị về đặc tính kháng thuốc Ciprofloxacin của chủng vi khuẩn E. coli có kết quả như sau:
-    - Dự báo của mô hình Stacking: {outcome_vietnamese} (Xác suất đề kháng Ciprofloxacin: {prob * 100:.2f}%)
+    - Dự báo của mô hình XGBoost Pipeline: {outcome_vietnamese} (Xác suất đề kháng Ciprofloxacin: {prob * 100:.2f}%)
     - Top đặc trưng ảnh hưởng lớn nhất lấy từ giải thích SHAP: {json.dumps(top_features)}
     
     Hãy trả lời các câu hỏi một cách khoa học, chuyên nghiệp, súc tích và dựa trên nghiên cứu vi sinh lâm sàng.

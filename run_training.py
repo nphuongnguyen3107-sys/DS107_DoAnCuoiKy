@@ -19,11 +19,13 @@ warnings.filterwarnings('ignore')
 import ml_pipeline
 
 def main():
+    import os
+    os.makedirs('models', exist_ok=True)
     # 1. Tải và phân chia dữ liệu
     print("1. Đang tải dữ liệu...")
     X_train, X_test, y_train, y_test = ml_pipeline.load_data(
-        x_path='X.csv', 
-        y_path='y.csv'
+        x_path='data/X.csv', 
+        y_path='data/y.csv'
     )
 
     # 2. Huấn luyện và tối ưu hóa hyperparameter bằng Optuna (50 trials)
@@ -41,7 +43,7 @@ def main():
         model=xgb_pipeline,
         threshold=threshold,
         features=features,
-        model_name="amr_classifier"
+        model_name="models/amr_classifier"
     )
 
     print(f"\n✅ Hoàn thành huấn luyện! File mô hình được lưu tại: {model_path}")

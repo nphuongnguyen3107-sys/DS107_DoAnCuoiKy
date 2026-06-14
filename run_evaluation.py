@@ -51,7 +51,7 @@ from ml_pipeline.config import cv_strategy, SCORING, report_cv, RANDOM_STATE, VA
 
 def load_latest_model():
     """Load file .joblib mới nhất trong thư mục."""
-    model_files = sorted(glob.glob("amr_classifier_*.joblib"))
+    model_files = sorted(glob.glob("models/amr_classifier_*.joblib"))
     if not model_files:
         raise FileNotFoundError("Không tìm thấy file .joblib — hãy chạy run_training.py trước.")
     path = model_files[-1]
@@ -284,8 +284,8 @@ def main():
     # Load dữ liệu
     print("📊 Đang tải dữ liệu...")
     X_train, X_test, y_train, y_test = ml_pipeline.load_data(
-        x_path='X.csv',
-        y_path='y.csv'
+        x_path='data/X.csv',
+        y_path='data/y.csv'
     )
 
     # Load model đã train

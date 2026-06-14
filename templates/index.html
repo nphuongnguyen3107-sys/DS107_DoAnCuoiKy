@@ -74,7 +74,7 @@
                         <div class="metric-icon val-auc"><i class="fa-solid fa-shield-halved"></i></div>
                         <div class="metric-info">
                             <h3>ROC-AUC</h3>
-                            <p class="metric-value">89.90%</p>
+                            <p class="metric-value">90.29%</p>
                         </div>
                     </div>
                     <!-- Metric Card 2 -->
@@ -82,7 +82,7 @@
                         <div class="metric-icon val-pr"><i class="fa-solid fa-bullseye"></i></div>
                         <div class="metric-info">
                             <h3>PR-AUC (Precision-Recall)</h3>
-                            <p class="metric-value">88.60%</p>
+                            <p class="metric-value">89.05%</p>
                         </div>
                     </div>
                     <!-- Metric Card 3 -->
@@ -90,7 +90,7 @@
                         <div class="metric-icon val-acc"><i class="fa-solid fa-check-double"></i></div>
                         <div class="metric-info">
                             <h3>Accuracy (Độ chính xác)</h3>
-                            <p class="metric-value">80.00%</p>
+                            <p class="metric-value">83.00%</p>
                         </div>
                     </div>
                 </div>
@@ -99,8 +99,8 @@
                 <div class="dashboard-card main-info-card">
                     <div class="card-icon"><i class="fa-solid fa-microscope"></i></div>
                     <div class="card-text">
-                        <h2>Tổng quan về nghiên cứu & Mô hình Stacking Ensemble</h2>
-                        <p>Hệ thống này được xây dựng trên bộ dữ liệu gồm <strong>2,404 mẫu hệ gen vi khuẩn E. coli</strong> với <strong>310 đặc trưng kháng thuốc</strong> (bao gồm 210 đặc trưng nhị phân đại diện cho các gen kháng thuốc/đột biến điểm đích và 100 đặc trưng liên tục đại diện cho mật độ k-mer nền). Mô hình sử dụng phương pháp Ensemble tích hợp (Stacking) giữa <strong>XGBoost, Random Forest và LightGBM</strong> với bộ phân lớp meta Logistic Regression để dự đoán khả năng đề kháng kháng sinh <strong>Ciprofloxacin (nhóm Fluoroquinolone)</strong>.</p>
+                        <h2>Tổng quan về nghiên cứu & Mô hình XGBoost Pipeline tối ưu</h2>
+                        <p>Hệ thống này được xây dựng trên bộ dữ liệu gồm <strong>2,404 mẫu hệ gen vi khuẩn E. coli</strong> với <strong>310 đặc trưng kháng thuốc</strong> (bao gồm 210 đặc trưng nhị phân đại diện cho các gen kháng thuốc/đột biến điểm đích và 100 đặc trưng liên tục đại diện cho mật độ k-mer nền). Mô hình sử dụng thuật toán <strong>XGBoost Pipeline</strong> được tinh chỉnh siêu tham số tối ưu bằng Optuna kết hợp bộ lọc giảm chiều đặc trưng RFE và kỹ thuật cân bằng dữ liệu SMOTE để dự đoán khả năng đề kháng kháng sinh <strong>Ciprofloxacin (nhóm Fluoroquinolone)</strong>.</p>
                     </div>
                 </div>
 
@@ -134,7 +134,7 @@
                         <div class="flowchart-step">
                             <div class="step-num">4</div>
                             <div class="step-label">RFE Selection</div>
-                            <div class="step-desc">Giảm từ 146 xuống còn 89 gen/k-mer quan trọng nhất</div>
+                            <div class="step-desc">Giảm từ 146 xuống còn 93 gen/k-mer quan trọng nhất</div>
                         </div>
                         <i class="fa-solid fa-circle-arrow-right flow-arrow"></i>
 
@@ -147,8 +147,8 @@
 
                         <div class="flowchart-step active-step">
                             <div class="step-num"><i class="fa-solid fa-check"></i></div>
-                            <div class="step-label">Stacking Ensemble</div>
-                            <div class="step-desc">XGBoost + RF + LGBM tổng hợp bởi Logistic Reg.</div>
+                            <div class="step-label">XGBoost Classifier</div>
+                            <div class="step-desc">Mô hình phân loại XGBoost tối ưu hóa siêu tham số.</div>
                         </div>
                     </div>
                 </div>
@@ -159,7 +159,7 @@
                         <table class="info-table">
                             <tr>
                                 <td><strong>Ngưỡng quyết định (Decision Threshold)</strong></td>
-                                <td>0.523 (Trung vị tối ưu từ Nested CV)</td>
+                                <td>0.521 (Tối ưu hóa để cân bằng Precision-Recall)</td>
                             </tr>
                             <tr>
                                 <td><strong>Mục tiêu tối thiểu (Target Recall)</strong></td>
@@ -189,15 +189,15 @@
                             <tbody>
                                 <tr>
                                     <td><span class="badge label-susceptible">Susceptible (Nhạy cảm)</span></td>
-                                    <td>84%</td>
-                                    <td>83%</td>
-                                    <td>83%</td>
+                                    <td>85%</td>
+                                    <td>87%</td>
+                                    <td>86%</td>
                                 </tr>
                                 <tr>
                                     <td><span class="badge label-resistant">Resistant (Kháng thuốc)</span></td>
-                                    <td>75%</td>
-                                    <td>77%</td>
-                                    <td>76%</td>
+                                    <td>80%</td>
+                                    <td>78%</td>
+                                    <td>79%</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -207,7 +207,7 @@
                 <!-- Model Comparison & ML Reasoning -->
                 <div class="dashboard-card" style="margin-top: 1.5rem;">
                     <h3><i class="fa-solid fa-code-compare"></i> Đánh giá So sánh & Lập luận Thiết kế Mô hình</h3>
-                    <p class="subtitle">So sánh kết quả kiểm định chéo (Cross-Validation) giữa các tiếp cận để minh chứng hiệu quả của hệ thống Stacking Ensemble.</p>
+                    <p class="subtitle">So sánh kết quả kiểm định chéo (Cross-Validation) giữa các tiếp cận để minh chứng hiệu quả của XGBoost Pipeline.</p>
                     
                     <div class="table-responsive" style="margin-bottom: 1.5rem;">
                         <table class="results-table">
@@ -235,12 +235,19 @@
                                     <td>310 đặc trưng gốc</td>
                                     <td>Cây quyết định đơn lẻ, không xử lý mất cân bằng lớp (bỏ sót nhiều chủng kháng)</td>
                                 </tr>
+                                <tr>
+                                    <td>Mô hình Stacking Ensemble</td>
+                                    <td><span style="color: #cbd5e1; font-weight: 500;">83.55%</span></td>
+                                    <td><span style="color: #cbd5e1; font-weight: 500;">81.65%</span></td>
+                                    <td>89 đặc trưng lọc (RFE)</td>
+                                    <td>Ensemble 2 tầng (XGB + RF + LGBM + Logistic Regression), độ phức tạp tính toán rất cao</td>
+                                </tr>
                                 <tr style="background: rgba(99, 102, 241, 0.1); border-left: 4px solid var(--primary);">
-                                    <td><strong>Stacking Ensemble (Đề xuất)</strong></td>
-                                    <td><span style="color: #34d399; font-weight: 700;">83.56%</span></td>
-                                    <td><span style="color: #34d399; font-weight: 700;">81.89%</span></td>
-                                    <td><strong>89 đặc trưng lọc (RFE)</strong></td>
-                                    <td><strong>Tích hợp XGBoost + RF + LGBM + SMOTE + Meta Learner (Tối ưu nhất)</strong></td>
+                                    <td><strong>XGBoost Pipeline (Đề xuất)</strong></td>
+                                    <td><span style="color: #34d399; font-weight: 700;">84.17%</span></td>
+                                    <td><span style="color: #34d399; font-weight: 700;">80.82%</span></td>
+                                    <td><strong>93 đặc trưng lọc (RFE)</strong></td>
+                                    <td><strong>Mô hình XGBoost + SMOTE + RFE + Tối ưu siêu tham số (Tối ưu nhất, ổn định hơn trên test set)</strong></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -249,9 +256,9 @@
                     <div style="background: rgba(255, 255, 255, 0.02); border-radius: 12px; padding: 1.25rem; border: 1px dashed var(--glass-border);">
                         <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: #a5b4fc;"><i class="fa-solid fa-lightbulb"></i> Tư duy thiết kế hệ thống (ML Reasoning)</h4>
                         <ul style="padding-left: 1.25rem; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
-                            <li><strong>Giải quyết mất cân bằng lớp (SMOTE):</strong> Dữ liệu gốc có tỷ lệ kháng thuốc Ciprofloxacin khá thấp. Việc thêm SMOTE giúp mô hình Stacking tăng mạnh Recall cho lớp Kháng từ <strong style="color: #fbbf24;">55.63%</strong> (Simple DT) lên <strong style="color: #34d399;">81.89%</strong>, hạn chế tối đa việc bỏ sót các chủng vi khuẩn thực sự kháng thuốc.</li>
-                            <li><strong>Giảm thiểu chi phí sinh học (RFE):</strong> Nhờ bộ lọc đặc trưng RFE, mô hình Stacking chỉ cần giải trình tự <strong>89 đặc trưng gen/k-mer quan trọng nhất</strong> (thay vì 310 đặc trưng gốc) mà vẫn giữ vững độ chính xác vượt trội. Điều này giúp tối ưu hóa chi phí giải trình tự gen vi khuẩn trong thực tiễn nghiên cứu.</li>
-                            <li><strong>Độ tin cậy của cấu trúc Stacking:</strong> Sự kết hợp giữa các mô hình mạnh (XGBoost, RF, LGBM) với bộ phân lớp Meta Logistic Regression giúp giảm phương sai, tăng tính ổn định của dự đoán trên dữ liệu hệ gen thực tế ngoài tập huấn luyện.</li>
+                            <li><strong>Giải quyết mất cân bằng lớp (SMOTE):</strong> Dữ liệu gốc có tỷ lệ kháng thuốc Ciprofloxacin khá thấp. Việc thêm SMOTE giúp mô hình XGBoost tăng mạnh Recall cho lớp Kháng từ <strong style="color: #fbbf24;">55.63%</strong> (Simple DT) lên <strong style="color: #34d399;">80.82%</strong> (CV) và <strong style="color: #34d399;">78.00%</strong> (Test set), hạn chế tối đa việc bỏ sót các chủng thực sự kháng thuốc.</li>
+                            <li><strong>Giảm thiểu chi phí sinh học (RFE):</strong> Nhờ bộ lọc đặc trưng RFE, mô hình chỉ cần giải trình tự <strong>93 đặc trưng gen/k-mer quan trọng nhất</strong> (thay vì 310 đặc trưng gốc) mà vẫn giữ vững hiệu năng. Điều này giúp tối ưu hóa đáng kể chi phí giải trình tự gen vi khuẩn.</li>
+                            <li><strong>Tính ưu việt của XGBoost Pipeline:</strong> Sự kết hợp giữa thuật toán Boosting mạnh mẽ với tối ưu hóa Optuna và bộ lọc RFE mang lại Macro F1 vượt trội và độ ổn định cao hơn hẳn Stacking Ensemble trên dữ liệu kiểm thử thực tế.</li>
                         </ul>
                     </div>
                 </div>
