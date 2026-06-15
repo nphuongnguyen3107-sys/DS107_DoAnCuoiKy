@@ -428,6 +428,13 @@ def generate_ai_report(outcome, probability, top_features, threshold):
     2. Giải thích ý nghĩa sinh học của các đột biến/gen kháng thuốc chính xuất hiện trong danh sách (đặc biệt là các đột biến điểm vùng QRDR của gyrA/parC có tác động SHAP dương lớn thúc đẩy kết quả kháng Ciprofloxacin).
     3. Đưa ra các gợi ý/khuyến nghị điều trị nhiễm trùng do chủng này gây ra (ví dụ: tránh sử dụng Ciprofloxacin/Fluoroquinolone, đề xuất các kháng sinh thay thế khả thi như Carbapenem hoặc yêu cầu làm thêm kháng sinh đồ kiểm chứng).
     4. Giữ giọng văn khoa học vi sinh chuyên nghiệp, cấu trúc rõ ràng sử dụng Markdown. Không dài dòng lê thê.
+    
+    *LƯU Ý CỰC KỲ QUAN TRỌNG:* KHÔNG thêm bất kỳ phần thông tin hành chính/thủ tục nào ở đầu câu trả lời như:
+    - "Ngày: ..."
+    - "Đơn vị: ..."
+    - "Người báo cáo: ..."
+    - Hoặc đường kẻ ngang phân tách hành chính nào ở đầu.
+    Hãy đi thẳng vào tiêu đề báo cáo "### 🧬 Báo cáo Phân tích..." và nội dung chi tiết.
     """
 
     # --- Thử gọi Gemini API bằng danh sách Key khả dụng ---
